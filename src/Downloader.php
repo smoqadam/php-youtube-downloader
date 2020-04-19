@@ -18,7 +18,16 @@ class Downloader
         if (!$handler) {
             throw new \InvalidArgumentException("File not found");
         }
-        file_put_contents($this->provider->getName(), $handler);
+        file_put_contents($this->getProviderSafeFileName(), $handler);
+    }
+
+    private function getProviderSafeFileName()
+    {
+        // remove anything which isn't a word, whitespace, number or any of the following characters -_~,;[].
+        $file = preg_replace("#([^\w\s\d\-_~,;\[\].])#i", '', $this->provider->getName());
+        $file = preg_replace("#([\.]{2,})#i", '', $file); // remove any runs of periods
+        $file = preg_replace("#([\s]){2,}#i", ' ', $file); // replace double space by single space
+        return $file;
     }
 
     private function streamCallback($notification_code, $severity, $message, $message_code, $bytes_transferred, $bytes_max)
